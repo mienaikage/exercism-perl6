@@ -1,11 +1,10 @@
 ---
-sudo: false
-language: perl6
-install:
-  - rakudobrew build-panda
-  - panda install JSON::Tiny
+sudo: required
+services:
+  - docker
 before_script:
   - bin/fetch-configlet
+  - docker pull rakudo-star:latest
 script:
   - bin/configlet .
-  - EXERCISM=1 prove -vr --exec=perl6 exercises/
+  - docker run -e EXERCISM=1 -t -v `pwd`:/exercism rakudo-star prove /exercism/exercises/ -vre perl6
