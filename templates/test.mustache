@@ -5,31 +5,25 @@ use lib #`{{#cdata}}my $dir = #`{{/cdata}}$?FILE.IO.dirname;#`{{#lib_comment}} #
 use JSON::Fast;#`{{/cdata}}#`{{#modules}}
 use #`{{&use}};#`{{/modules}}
 
-my Str:D $exercise#`{{#exercise}} := '#`{{&exercise}}'#`{{/exercise}};#`{{#exercise_comment}} #`[#`{{&exercise_comment}}]#`{{/exercise_comment}}
-my Version:D $version#`{{#version}} = v#`{{&version}}#`{{/version}};#`{{#version_comment}} #`[#`{{&version_comment}}]#`{{/version_comment}}
-my Str $module //= $exercise;#`{{#module_comment}} #`[#`{{&module_comment}}]#`{{/module_comment}}#`{{#plan}}
+my Version:D $version#`{{#version}} = v#`{{&version}}#`{{/version}};#`{{#version_comment}} #`[#`{{&version_comment}}]#`{{/version_comment}}#`{{#plan}}
 plan #`{{&plan}};#`{{#plan_comment}} #`[#`{{&plan_comment}}]#`{{/plan_comment}}#`{{/plan}}
 #`{{#use_test_comment}}
 
 #`[#`{{&use_test_comment}}]#`{{/use_test_comment}}
-use-ok $module or bail-out;
-require ::($module);
+use-ok '#`{{&exercise}}' or bail-out;
+use #`{{&exercise}};
 #`{{#version_test_comment}}
 
 #`[#`{{&version_test_comment}}]#`{{/version_test_comment}}
-if ::($exercise).^ver !~~ $version {
+if #`{{&exercise}}.^ver !~~ $version {
   warn "\nExercise version mismatch. Further tests may fail!"
-    ~ "\n$exercise is $(::($exercise).^ver.gist). "
-    ~ "Test is $($version.gist).\n";
-  bail-out 'Example version must match test version.' if %*ENV<EXERCISM>;
+    ~ "\n#`{{&exercise}} is {#`{{exercise}}.^ver.gist}. "
+    ~ "Test is {$version.gist}.\n";
 }
-#`{{#imports}}#`{{#imports_comment}}
-#`[#`{{&imports_comment}}]#`{{/imports_comment}}
-require ::($module) <#`{{&imports}}>;
-#`{{/imports}}#`{{#methods}}#`{{#methods_comment}}
+#`{{#methods}}#`{{#methods_comment}}
 #`[#`{{&methods_comment}}]#`{{/methods_comment}}
 subtest 'Class methods', {
-  ok ::($exercise).can($_), $_ for <#`{{&methods}}>;
+  ok #`{{&exercise}}.can($_), $_ for <#`{{&methods}}>;
 }
 #`{{/methods}}#`{{#cdata}}
 my $c-data = from-json $=pod.pop.contents;#`{{/cdata}}
@@ -41,21 +35,3 @@ my $c-data = from-json $=pod.pop.contents;#`{{/cdata}}
 
 #`{{&json}}
 =end code#`{{/cdata}}
-#`{{#exercism_comment}}
-
-#`[#`{{&exercism_comment}}]#`{{/exercism_comment}}#`{{#cdata}}
-unless %*ENV<EXERCISM> {
-  skip-rest 'exercism tests';
-  exit;
-}
-
-subtest 'canonical-data' => {
-  (my $c-data-file = "$dir/../../problem-specifications/exercises/{
-    $dir.IO.resolve.basename
-  }/canonical-data.json".IO.resolve) ~~ :f ??
-    is-deeply $c-data, EVAL('from-json $c-data-file.slurp'), 'match problem-specifications' !!
-    flunk 'problem-specifications file not found';
-}
-
-#`{{/cdata}}
-INIT { $module = 'Example' if %*ENV<EXERCISM> }
