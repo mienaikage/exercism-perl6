@@ -7,6 +7,9 @@ before_script:
 script:
   - bin/configlet lint .
   - docker run
+    --volume $PWD:/exercism
+    rakudo-star /exercism/bin/rename-exercises.pl6
+  - docker run
     --env EXERCISM=1
     --volume $PWD:/exercism
     rakudo-star prove /exercism
